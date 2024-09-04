@@ -82,6 +82,10 @@ def predict(df, clfName, clf):
         clf.eval()
 
         with torch.no_grad():  
+            ypred_ = clf(X)  # Ottengo le predizioni
+            ypred = ypred_.cpu().numpy()  # Converto le predizioni da tensor a numpy array per calcolare le metriche
+            
+        y = y.cpu().numpy()  # Converto y in numpy array per calcolare le metriche
 
     else:
         X = X.values  
@@ -89,14 +93,18 @@ def predict(df, clfName, clf):
         ypred = clf.predict(X)  
 
 
-
-
-    mse = mean_squared_error(ypred, y)
-    mae = mean_absolute_error(ypred, y)
-    mape = mean_absolute_percentage_error(ypred, y)
-    r2 = r2_score(ypred, y)
+    mse = mean_squared_error(y, ypred)
+    mae = mean_absolute_error(y, ypred)
+    mape = mean_absolute_percentage_error(y, ypred)
+    r2 = r2_score(y, ypred)
     
-    perf = {"mse": mse, "mae": mae, "mape": mape, "r2square": r2}
+    perf = {
+        "mse": mse, 
+        "mae": mae, 
+        "mape": mape, 
+        "r2square": r2
+    }
+    
     return perf
     
 
