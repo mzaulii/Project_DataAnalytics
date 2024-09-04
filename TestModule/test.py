@@ -23,11 +23,14 @@ def preprocess(df, clfName):
 
     # DOBIAMO METTERE ANCHE TABULAR???
     if ((clfName == "RF") or (clfName == "LR") or (clfName == "SVR") or (clfName == "KNR") or (clfName == "FF")):
-        X = df.iloc[:, :5] # ?????
-        y = df.iloc[:, 5] # ?????
+        X = df.iloc[:, :5] 
+        y = df.iloc[:, 5] 
+        
         scaler = pickle.load(open("scaler.save", 'rb'))
+        
         X = pd.DataFrame(scaler.transform(X))
         dfNew = pd.concat([X, y], axis = 1)
+        
         return dfNew
 
 
@@ -64,13 +67,15 @@ def load(clfName):
 # Input: PreProcessed dataset, Regressor Name, Regressor Object 
 # Output: Performance dictionary
 def predict(df, clfName, clf):
-    X = df.iloc[:, :5] # ?????
-    y = df.iloc[:, 5] # ?????
+    X = df.iloc[:, :5] 
+    y = df.iloc[:, 5] 
+    
     ypred = clf.predict(X)
     mse = mean_squared_error(ypred, y)
     mae = mean_absolute_error(ypred, y)
     mape = mean_absolute_percentage_error(ypred, y)
     r2 = r2_score(ypred, y)
+    
     perf = {"mse": mse, "mae": mae, "mape": mape, "r2square": r2}
     return perf
     
