@@ -23,16 +23,14 @@ def preprocess(df, clfName):
 
     # DOBIAMO METTERE ANCHE TABULAR???
     if ((clfName == "RF") or (clfName == "LR") or (clfName == "SVR") or (clfName == "KNR") or (clfName == "FF")):
-        X = df.iloc[:, :5] 
-        y = df.iloc[:, 5] 
-        
+        X = df.drop(columns=['Year']) 
+        y = df['Year'] 
         scaler = pickle.load(open("scaler.save", 'rb'))
-        
         X = pd.DataFrame(scaler.transform(X))
         dfNew = pd.concat([X, y], axis = 1)
-        
         return dfNew
-
+    else: # No scaler per TabNet e TabTransformer
+        return df
 
 
 # Input: Regressor name ("lr": Linear Regression, "SVR": Support Vector Regressor)
@@ -67,10 +65,32 @@ def load(clfName):
 # Input: PreProcessed dataset, Regressor Name, Regressor Object 
 # Output: Performance dictionary
 def predict(df, clfName, clf):
-    X = df.iloc[:, :5] 
-    y = df.iloc[:, 5] 
+    X = df.drop(columns=['Year']) 
+    y = df['Year'] 
     
-    ypred = clf.predict(X)
+    #ypred = clf.predict(X)
+
+    # Tabular
+    if (clfName == "TB") or (clfName == "TF"):
+        ypred = clf.predict(df)  
+
+    # Rete FF
+    elif clfName == "FF":
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        X = torch.FloatTensor(X.values).to(device)
+        y = torch.FloatTensor(y.values).view(-1, 1).to(device)
+        clf.eval()
+
+        with torch.no_grad():  
+
+    else:
+        X = X.values  
+        y = y.values  
+        ypred = clf.predict(X)  
+
+
+
+
     mse = mean_squared_error(ypred, y)
     mae = mean_absolute_error(ypred, y)
     mape = mean_absolute_percentage_error(ypred, y)
@@ -79,8 +99,4 @@ def predict(df, clfName, clf):
     perf = {"mse": mse, "mae": mae, "mape": mape, "r2square": r2}
     return perf
     
-    
-    
-    
-    
-    
+
