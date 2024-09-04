@@ -24,10 +24,13 @@ def preprocess(df, clfName):
     if ((clfName == "RF") or (clfName == "LR") or (clfName == "SVR") or (clfName == "KNR") or (clfName == "FF")):
         X = df.drop(columns=['Year']) 
         y = df['Year'] 
+        
         scaler = pickle.load(open("scaler.save", 'rb'))
         X = pd.DataFrame(scaler.transform(X))
         dfNew = pd.concat([X, y], axis = 1)
+        
         return dfNew
+    
     else: # No scaler per TabNet e TabTransformer
         return df
 
@@ -57,6 +60,12 @@ def load(clfName):
         clf = pickle.load(open("tabTransf_best.save", 'rb'))
         return clf
     else:
+        '''
+        Ritorna None se:
+        - l'algoritmo non è stato implementato 
+        oppure
+        - se clfName ha un valore diverso da quelli gestiti
+        '''
         return None
 
 
@@ -68,11 +77,11 @@ def predict(df, clfName, clf):
     y = df['Year'] 
     
     # Tabular
-    if (clfName == "TB") or (clfName == "TF"):
+    if ((clfName == "TB") or (clfName == "TF")):
         ypred = clf.predict(df)  
 
     # Rete FF
-    elif clfName == "FF":
+    elif (clfName == "FF"):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         X = torch.FloatTensor(X.values).to(device)
         y = torch.FloatTensor(y.values).view(-1, 1).to(device)
@@ -83,25 +92,27 @@ def predict(df, clfName, clf):
             ypred = ypred_.cpu().numpy()  # Converto le predizioni da tensor a numpy array per calcolare le metriche
             
         y = y.cpu().numpy()  # Converto y in numpy array per calcolare le metriche
-
+        
+    # Modelli
     else:
         X = X.values  
         y = y.values  
         ypred = clf.predict(X)  
 
-
+    # Calcolo delle metriche
     mse = mean_squared_error(y, ypred)
     mae = mean_absolute_error(y, ypred)
     mape = mean_absolute_percentage_error(y, ypred)
     r2 = r2_score(y, ypred)
     
-    perf = {
+    # Ritorna un dizionario contenente le metriche di prestazione
+    performance = {
         "mse": mse, 
         "mae": mae, 
         "mape": mape, 
         "r2square": r2
     }
     
-    return perf
+    return performance
     
 
