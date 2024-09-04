@@ -21,7 +21,6 @@ def getName():
 # Output: PreProcessed test dataframe
 def preprocess(df, clfName):
 
-    # DOBIAMO METTERE ANCHE TABULAR???
     if ((clfName == "RF") or (clfName == "LR") or (clfName == "SVR") or (clfName == "KNR") or (clfName == "FF")):
         X = df.drop(columns=['Year']) 
         y = df['Year'] 
@@ -68,8 +67,6 @@ def predict(df, clfName, clf):
     X = df.drop(columns=['Year']) 
     y = df['Year'] 
     
-    #ypred = clf.predict(X)
-
     # Tabular
     if (clfName == "TB") or (clfName == "TF"):
         ypred = clf.predict(df)  
